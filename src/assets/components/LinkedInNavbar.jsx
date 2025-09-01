@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Navbar, Nav, Container, Dropdown, Image } from "react-bootstrap";
 import {
   BsLinkedin,
@@ -10,21 +11,25 @@ import {
   BsSearch,
 } from "react-icons/bs";
 
-/* SearchBox SENZA suggerimenti */
-function SearchBox() {
-  return (
-    <div className="lkd-search-pill">
-      <span className="lkd-search-icon">
-        <BsSearch />
-      </span>
-      <input type="search" placeholder="Cerca" className="lkd-search-input" />
-    </div>
-  );
-}
+/* Search base */
+const SearchBox = () => (
+  <div className="lkd-search-pill">
+    <span className="lkd-search-icon">
+      <BsSearch />
+    </span>
+    <input type="search" placeholder="Cerca" className="lkd-search-input" />
+  </div>
+);
 
-export default function LinkedInNavbar() {
-  const IconItem = ({ icon, label, active }) => (
-    <Nav.Link href="#" className={`lkd-item px-3 ${active ? "active" : ""}`}>
+const LinkedInNavbar = () => {
+  const [active, setActive] = useState("home");
+
+  const IconItem = ({ icon, label, eventKey }) => (
+    <Nav.Link
+      eventKey={eventKey}
+      className={`lkd-item px-3 ${active === eventKey ? "active" : ""}`}
+      onClick={() => setActive(eventKey)}
+    >
       <div className="d-flex flex-column align-items-center gap-1">
         <span className="lkd-icon fs-5">{icon}</span>
         <small className="nav-label">{label}</small>
@@ -55,12 +60,28 @@ export default function LinkedInNavbar() {
 
         {/* Destra */}
         <Navbar.Collapse id="lkd-nav">
-          <Nav className="ms-auto align-items-center">
-            <IconItem icon={<BsHouseDoorFill />} label="Home" active />
-            <IconItem icon={<BsPeopleFill />} label="Rete" />
-            <IconItem icon={<BsBriefcaseFill />} label="Lavoro" />
-            <IconItem icon={<BsChatDotsFill />} label="Messaggistica" />
-            <IconItem icon={<BsBellFill />} label="Notifiche" />
+          <Nav
+            className="ms-auto align-items-center"
+            activeKey={active}
+            onSelect={(k) => setActive(k)}
+          >
+            <IconItem icon={<BsHouseDoorFill />} label="Home" eventKey="home" />
+            <IconItem icon={<BsPeopleFill />} label="Rete" eventKey="rete" />
+            <IconItem
+              icon={<BsBriefcaseFill />}
+              label="Lavoro"
+              eventKey="lavoro"
+            />
+            <IconItem
+              icon={<BsChatDotsFill />}
+              label="Messaggistica"
+              eventKey="msg"
+            />
+            <IconItem
+              icon={<BsBellFill />}
+              label="Notifiche"
+              eventKey="notifiche"
+            />
 
             {/* Profilo */}
             <Nav.Item className="px-3 nav-divider-lg">
@@ -124,69 +145,58 @@ export default function LinkedInNavbar() {
         </Navbar.Collapse>
       </Container>
 
+      {/* Styles marcio */}
       <style>{`
-/* Stile inline marcio */
-.linkedin-navbar {
-  position: sticky; top: 0; z-index: 1100; width: 100%;
-  background-color: #fff !important; border-bottom: 1px solid #e6e6e6;
-}
-
-/* Barra di ricerca */
-.lkd-search-pill {
-  display: flex; align-items: center; gap: .5rem;
-  background: #fff; border: 1px solid #dcdcdc; border-radius: 999px;
-  padding: .375rem .5rem .375rem .75rem;
-}
-.lkd-search-pill:focus-within {
-  border-color: #000; box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
-}
-.lkd-search-icon { display: inline-flex; font-size: 1rem; color: #444; }
-.lkd-search-input {
-  border: 0; outline: none; background: transparent; width: 100%;
-}
-.lkd-search-input::placeholder { color: #6b6f75; }
-
-/* ICONCINE */
-.nav-label { font-size: 11px; color: #666; }
-.lkd-item { color: #666; position: relative; }
-.lkd-item .lkd-icon { color: #666; transition: color .15s ease; }
-.lkd-item:hover .lkd-icon, .lkd-item.active .lkd-icon { color: #000 !important; }
-.lkd-item:hover .nav-label, .lkd-item.active .nav-label { color: #000; }
-
-.lkd-item.active::after {
-  content: ""; position: absolute; left: 12px; right: 12px; bottom: -6px;
-  height: 2px; background: #000; border-radius: 2px;
-}
-
-/* Divider */
-.nav-divider-lg { border-left: 1px solid #e6e6e6; }
-
-/* Premium badge */
-.premium-badge { width: 18px; height: 18px; background: #f8c77e; border-radius: 3px; }
-
-/* Dropdown mobile */
-.dropdown-menu-touch .dropdown-item { padding: 0.8rem 1rem; }
-
-/* Mobile: icone orizzontali */
-@media (max-width: 991.98px) {
-  #lkd-nav .navbar-nav {
-    flex-direction: row !important;
-    justify-content: space-around;
-    align-items: center;
-    flex-wrap: nowrap;
-    width: 100%;
-    padding: .25rem 0;
-    gap: .25rem;
-  }
-  #lkd-nav .nav-link { padding: .25rem .5rem; }
-  .nav-label { display: none; }
-  .nav-divider-lg { border-left: none; }
-  .dropdown-menu-touch { 
-    position: fixed !important; left: 50% !important; transform: translateX(-50%) !important;
-    top: 64px !important; width: 92vw; max-height: 70vh; overflow: auto; border-radius: 12px;
-  }
-}
+        .linkedin-navbar {
+          position: sticky; top: 0; z-index: 1100; width: 100%;
+          background-color: #fff !important; border-bottom: 1px solid #e6e6e6;
+        }
+        .lkd-search-pill {
+          display: flex; align-items: center; gap: .5rem;
+          background: #fff; border: 1px solid #dcdcdc; border-radius: 999px;
+          padding: .375rem .5rem .375rem .75rem;
+        }
+        .lkd-search-pill:focus-within {
+          border-color: #000; box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+        }
+        .lkd-search-icon { display: inline-flex; font-size: 1rem; color: #444; }
+        .lkd-search-input {
+          border: 0; outline: none; background: transparent; width: 100%;
+        }
+        .lkd-search-input::placeholder { color: #6b6f75; }
+        .nav-label { font-size: 11px; color: #666; }
+        .lkd-item { color: #666; position: relative; }
+        .lkd-item .lkd-icon { color: #666; transition: color .15s ease; }
+        .lkd-item:hover .lkd-icon, .lkd-item.active .lkd-icon { color: #000 !important; }
+        .lkd-item:hover .nav-label, .lkd-item.active .nav-label { color: #000; }
+        .lkd-item.active::after {
+          content: ""; position: absolute; left: 12px; right: 12px; bottom: -6px;
+          height: 2px; background: #000; border-radius: 2px;
+        }
+        .nav-divider-lg { border-left: 1px solid #e6e6e6; }
+        .premium-badge { width: 18px; height: 18px; background: #f8c77e; border-radius: 3px; }
+        .dropdown-menu-touch .dropdown-item { padding: 0.8rem 1rem; }
+        @media (max-width: 991.98px) {
+          #lkd-nav .navbar-nav {
+            flex-direction: row !important;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: nowrap;
+            width: 100%;
+            padding: .25rem 0;
+            gap: .25rem;
+          }
+          #lkd-nav .nav-link { padding: .25rem .5rem; }
+          .nav-label { display: none; }
+          .nav-divider-lg { border-left: none; }
+          .dropdown-menu-touch { 
+            position: fixed !important; left: 50% !important; transform: translateX(-50%) !important;
+            top: 64px !important; width: 92vw; max-height: 70vh; overflow: auto; border-radius: 12px;
+          }
+        }
       `}</style>
     </Navbar>
   );
-}
+};
+
+export default LinkedInNavbar;

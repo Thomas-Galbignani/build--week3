@@ -90,11 +90,11 @@ export default function LinkedInFooter() {
               <div>
                 <strong>Trasparenza sui contenuti consigliati</strong>
                 <br />
-                Scopri di più sui contenuti consigliati.
+                <a href="#">Scopri di più sui contenuti consigliati</a>
               </div>
             </div>
 
-            <Form.Select size="sm" className="mt-2">
+            <Form.Select size="sm" className="mt-2 d-none d-lg-block">
               <option>Italiano (Italiano)</option>
               <option>English</option>
               <option>Deutsch</option>
