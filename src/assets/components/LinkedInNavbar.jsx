@@ -85,7 +85,7 @@ const LinkedInNavbar = () => {
 
             {/* Profilo */}
             <Nav.Item className="px-3 nav-divider-lg">
-              <Dropdown align="end" popperConfig={{ strategy: "fixed" }}>
+              <Dropdown align="end">
                 <Dropdown.Toggle
                   variant="link"
                   className="text-decoration-none text-secondary p-0"
