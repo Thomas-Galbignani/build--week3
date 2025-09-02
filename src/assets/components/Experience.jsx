@@ -3,14 +3,15 @@ import ModalFormExperiences from "./ModalFormExperiences";
 import { useState, useEffect, useMemo } from "react";
 
 const ExperienceItem = ({ role, org, period, place, mode, bullets }) => (
-  <div className="d-flex gap-3 py-3 border-bottom">
+  <div className="d-flex gap-3 py-3 border-bottom align-items-start">
     <div
-      className="rounded bg-secondary text-white d-flex align-items-center justify-content-center"
+      className="rounded bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
       style={{ width: 40, height: 40 }}
     >
       {org?.[0] || "·"}
     </div>
-    <div>
+
+    <div className="flex-grow-1">
       <div className="fw-semibold">{role}</div>
       <div className="small text-muted">
         {org} · {period}
@@ -18,10 +19,15 @@ const ExperienceItem = ({ role, org, period, place, mode, bullets }) => (
       <div className="small text-muted">
         {place} {mode ? `· ${mode}` : ""}
       </div>
+
       {bullets?.length > 0 && (
-        <ul className="small mt-2 mb-0 ps-3">
+        // niente marker di lista: usiamo bullet custom e restiamo allineati al testo
+        <ul className="small mt-2 mb-0 ps-0 list-unstyled">
           {bullets.map((b, i) => (
-            <li key={i}>{b}</li>
+            <li key={i} className="d-flex">
+              <span className="me-2">•</span>
+              <span className="text-wrap">{b}</span>
+            </li>
           ))}
         </ul>
       )}
