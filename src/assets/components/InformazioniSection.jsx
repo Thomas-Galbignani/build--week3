@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, Spinner } from "react-bootstrap";
 import { Pencil, Gem } from "react-bootstrap-icons";
 
-function InformazioniSection({ token }) {
+const InformazioniSection = ({ token }) => {
   const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -77,6 +77,6 @@ function InformazioniSection({ token }) {
       </Card.Body>
     </Card>
   );
-}
+};
 
 export default InformazioniSection;

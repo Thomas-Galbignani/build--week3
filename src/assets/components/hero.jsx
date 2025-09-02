@@ -8,7 +8,7 @@ const FALLBACK_BG =
 const FALLBACK_AVATAR =
   "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541";
 
-export default function Hero({ token }) {
+const Hero = ({ token }) => {
   const [me, setMe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -145,4 +145,6 @@ export default function Hero({ token }) {
       </div>
     </Container>
   );
-}
+};
+
+export default Hero;
