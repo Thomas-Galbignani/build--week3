@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navbar, Nav, Container, Dropdown, Image } from "react-bootstrap";
 import {
   BsLinkedin,
@@ -12,17 +12,165 @@ import {
 } from "react-icons/bs";
 
 /* Search base */
-const SearchBox = () => (
-  <div className="lkd-search-pill">
-    <span className="lkd-search-icon">
-      <BsSearch />
-    </span>
-    <input type="search" placeholder="Cerca" className="lkd-search-input" />
+const SearchBox = ({
+  value,
+  onChange,
+  onSubmit,
+  loading,
+  suggestions,
+  onPickSuggestion,
+  error,
+}) => (
+  <div className="position-relative">
+    <div className="lkd-search-pill">
+      <span className="lkd-search-icon">
+        <BsSearch />
+      </span>
+      <input
+        type="search"
+        placeholder="Cerca profilo per nome o username…"
+        className="lkd-search-input"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") onSubmit();
+        }}
+      />
+      {loading && <small className="text-muted ms-2 me-1">cerca…</small>}
+    </div>
+
+    {/* Dropdown suggerimenti */}
+    {(suggestions.length > 0 || error) && (
+      <div className="search-suggestions shadow-sm">
+        {error && (
+          <div className="px-3 py-2 small text-danger border-bottom">
+            {error}
+          </div>
+        )}
+        {suggestions.slice(0, 6).map((p) => (
+          <button
+            key={p._id}
+            type="button"
+            className="w-100 text-start px-3 py-2 suggestion-item"
+            onClick={() => onPickSuggestion(p)}
+            title={`${p.name} ${p.surname}`}
+          >
+            <div className="d-flex align-items-center gap-2">
+              <img
+                src={
+                  p.image ||
+                  "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
+                }
+                alt=""
+                width={28}
+                height={28}
+                style={{ objectFit: "cover", borderRadius: 999 }}
+              />
+              <div className="d-flex flex-column">
+                <span className="small fw-semibold">
+                  {p.name} {p.surname}
+                </span>
+                <span className="small text-muted">
+                  @{p.username || "—"} · {p.title || "—"}
+                </span>
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    )}
+
+    <style>{`
+      .search-suggestions {
+        position: absolute; left: 0; right: 0; top: calc(100% + 6px);
+        background: #fff; border: 1px solid #e6e6e6; border-radius: 12px; z-index: 1200;
+        max-height: 60vh; overflow: auto;
+      }
+      .suggestion-item {
+        background: #fff; border: 0; outline: none;
+      }
+      .suggestion-item:hover { background: #f6f6f6; }
+    `}</style>
   </div>
 );
 
-const LinkedInNavbar = () => {
+const LinkedInNavbar = ({ token, onSelectProfile }) => {
   const [active, setActive] = useState("home");
+  const [q, setQ] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const abortRef = useRef(null);
+
+  const normalized = (s) =>
+    (s || "")
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .toLowerCase();
+
+  const fetchAllProfiles = async () => {
+    if (!token) throw new Error("Token mancante");
+    const url = "https://striveschool-api.herokuapp.com/api/profile/";
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: abortRef.current?.signal,
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(`Errore API (${res.status}): ${t}`);
+    }
+    const arr = await res.json();
+    return Array.isArray(arr) ? arr : [];
+  };
+
+  const runSearch = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      if (abortRef.current) abortRef.current.abort();
+      abortRef.current = new AbortController();
+
+      const all = await fetchAllProfiles();
+      const nq = normalized(q);
+      const filtered = all.filter((p) => {
+        const full = normalized(`${p.name} ${p.surname}`);
+        const uname = normalized(p.username);
+        const title = normalized(p.title);
+        const area = normalized(p.area);
+        return (
+          full.includes(nq) ||
+          (uname && uname.includes(nq)) ||
+          (title && title.includes(nq)) ||
+          (area && area.includes(nq))
+        );
+      });
+
+      setSuggestions(filtered);
+      if (filtered.length === 1) {
+        onSelectProfile?.(filtered[0]);
+      } else if (filtered.length === 0) {
+        setError("Nessun profilo trovato.");
+      }
+    } catch (e) {
+      if (e.name !== "AbortError") setError(e.message || "Errore di ricerca");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // debounce suggerimenti mentre si digita
+  useEffect(() => {
+    if (!q.trim()) {
+      setSuggestions([]);
+      setError("");
+      return;
+    }
+    const id = setTimeout(() => {
+      runSearch();
+    }, 300);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
 
   const IconItem = ({ icon, label, eventKey }) => (
     <Nav.Link
@@ -52,7 +200,18 @@ const LinkedInNavbar = () => {
             <BsLinkedin />
           </a>
           <div className="d-none d-md-block" style={{ minWidth: 360 }}>
-            <SearchBox />
+            <SearchBox
+              value={q}
+              onChange={setQ}
+              onSubmit={runSearch}
+              loading={loading}
+              error={error}
+              suggestions={suggestions}
+              onPickSuggestion={(p) => {
+                onSelectProfile?.(p);
+                setSuggestions([]);
+              }}
+            />
           </div>
         </div>
 
@@ -85,7 +244,7 @@ const LinkedInNavbar = () => {
 
             {/* Profilo */}
             <Nav.Item className="px-3 nav-divider-lg">
-              <Dropdown align="end" popperConfig={{ strategy: "fixed" }}>
+              <Dropdown align="end">
                 <Dropdown.Toggle
                   variant="link"
                   className="text-decoration-none text-secondary p-0"
@@ -112,7 +271,7 @@ const LinkedInNavbar = () => {
 
             {/* Per le aziende */}
             <Nav.Item className="px-3 nav-divider-lg d-none d-lg-block">
-              <Dropdown align="end" popperConfig={{ strategy: "fixed" }}>
+              <Dropdown align="end">
                 <Dropdown.Toggle
                   variant="link"
                   className="text-decoration-none text-secondary p-0"
@@ -145,7 +304,7 @@ const LinkedInNavbar = () => {
         </Navbar.Collapse>
       </Container>
 
-      {/* Styles marcio */}
+      {/* Styles originali + piccoli extra */}
       <style>{`
         .linkedin-navbar {
           position: sticky; top: 0; z-index: 1100; width: 100%;
@@ -160,9 +319,7 @@ const LinkedInNavbar = () => {
           border-color: #000; box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
         }
         .lkd-search-icon { display: inline-flex; font-size: 1rem; color: #444; }
-        .lkd-search-input {
-          border: 0; outline: none; background: transparent; width: 100%;
-        }
+        .lkd-search-input { border: 0; outline: none; background: transparent; width: 100%; }
         .lkd-search-input::placeholder { color: #6b6f75; }
         .nav-label { font-size: 11px; color: #666; }
         .lkd-item { color: #666; position: relative; }
@@ -178,18 +335,14 @@ const LinkedInNavbar = () => {
         .dropdown-menu-touch .dropdown-item { padding: 0.8rem 1rem; }
         @media (max-width: 991.98px) {
           #lkd-nav .navbar-nav {
-            flex-direction: row !important;
-            justify-content: space-around;
-            align-items: center;
-            flex-wrap: nowrap;
-            width: 100%;
-            padding: .25rem 0;
-            gap: .25rem;
+            flex-direction: row !important; justify-content: space-around;
+            align-items: center; flex-wrap: nowrap; width: 100%;
+            padding: .25rem 0; gap: .25rem;
           }
           #lkd-nav .nav-link { padding: .25rem .5rem; }
           .nav-label { display: none; }
           .nav-divider-lg { border-left: none; }
-          .dropdown-menu-touch { 
+          .dropdown-menu-touch {
             position: fixed !important; left: 50% !important; transform: translateX(-50%) !important;
             top: 64px !important; width: 92vw; max-height: 70vh; overflow: auto; border-radius: 12px;
           }
