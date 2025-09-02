@@ -58,7 +58,7 @@ function ModalFormExperiences() {
         <MdAddToPhotos />
       </Button>
 
-      <Modal show={show} onHide={handleClose}>
+      <Modal show={show} onHide={handleClose} className="ModalExp">
         <Modal.Header closeButton>
           <Modal.Title>Aggiungi esperienza lavorativa</Modal.Title>
         </Modal.Header>
@@ -123,6 +123,12 @@ function ModalFormExperiences() {
             </Button>
           </Modal.Footer>
         </Form>
+        <style>{`
+        .ModalExp {
+          z-index: 1200; 
+          
+        }
+          `}</style>
       </Modal>
     </>
   );
