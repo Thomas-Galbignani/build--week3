@@ -2,29 +2,34 @@ import { useEffect, useState } from "react";
 import { Card, Spinner } from "react-bootstrap";
 import { Pencil, Gem } from "react-bootstrap-icons";
 
-const InformazioniSection = ({ token }) => {
-  const [bio, setBio] = useState("");
-  const [loading, setLoading] = useState(true);
+const InformazioniSection = ({ token, profile }) => {
+  const [bio, setBio] = useState(profile?.bio || "");
+  const [loading, setLoading] = useState(!profile);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (profile) {
+      setBio(profile.bio || "");
+      setLoading(false);
+      setError("");
+      return;
+    }
     const load = async () => {
       try {
         setLoading(true);
         setError("");
-
         const tk = token || localStorage.getItem("STRIVE_TOKEN");
         if (!tk) throw new Error("Token mancante");
-
         const res = await fetch(
           "https://striveschool-api.herokuapp.com/api/profile/me",
-          { headers: { Authorization: `Bearer ${tk}` } }
+          {
+            headers: { Authorization: `Bearer ${tk}` },
+          }
         );
         if (!res.ok) {
           const txt = await res.text();
           throw new Error(`Errore API (${res.status}): ${txt}`);
         }
-
         const me = await res.json();
         setBio(me?.bio || "");
       } catch (e) {
@@ -33,9 +38,8 @@ const InformazioniSection = ({ token }) => {
         setLoading(false);
       }
     };
-
     load();
-  }, [token]);
+  }, [token, profile]);
 
   return (
     <Card className="border rounded mb-4">

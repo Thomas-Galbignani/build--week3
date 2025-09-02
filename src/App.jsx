@@ -14,21 +14,27 @@ import Languages from "./assets/components/Languages.jsx";
 import Interests from "./assets/components/Interests.jsx";
 import AnalisiSection from "./assets/components/AnalisiSection.jsx";
 import InformazioniSection from "./assets/components/InformazioniSection.jsx";
+import { useState } from "react";
 
 function App() {
   const token =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGI1YTY3YTE2MjdjNjAwMTVmOGM1NmQiLCJpYXQiOjE3NTY3MzUxMDksImV4cCI6MTc1Nzk0NDcwOX0.gG2pebnNJtBCq0sb9BDZTkubFARrTjYyvZOoaZigMLg";
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  // Uso questo stato per memorizzare il profilo scelto
   return (
     <Container>
-      <LinkedInNavbar token={token} />
+      <LinkedInNavbar
+        token={token}
+        onSelectProfile={(p) => setSelectedProfile(p)}
+      />
       <Row>
         <Col sm={12} md={8}>
-          <Hero token={token} />
+          <Hero token={token} profile={selectedProfile} />
           <div>
             <AnalisiSection />
           </div>
           <div>
-            <InformazioniSection token={token} />
+            <InformazioniSection token={token} profile={selectedProfile} />
           </div>
           <div className="mb-5">
             <Activity />

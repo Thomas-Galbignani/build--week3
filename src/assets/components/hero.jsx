@@ -8,22 +8,26 @@ const FALLBACK_BG =
 const FALLBACK_AVATAR =
   "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541";
 
-const Hero = ({ token }) => {
-  const [me, setMe] = useState(null);
-  const [loading, setLoading] = useState(true);
+const Hero = ({ token, profile }) => {
+  const [me, setMe] = useState(profile || null);
+  const [loading, setLoading] = useState(!profile);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    // se arriva un profilo dalla search, usa quello
+    if (profile) {
+      setMe(profile);
+      setLoading(false);
+      setError("");
+      return;
+    }
+    // fallback: me
     const fetchMe = async () => {
       try {
         setLoading(true);
         const res = await fetch(
           "https://striveschool-api.herokuapp.com/api/profile/me",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) {
           const txt = await res.text();
@@ -37,13 +41,12 @@ const Hero = ({ token }) => {
         setLoading(false);
       }
     };
-
     if (token) fetchMe();
     else {
       setError("Token mancante");
       setLoading(false);
     }
-  }, [token]);
+  }, [token, profile]);
 
   if (loading) return <div>Caricamento…</div>;
   if (error) return <div className="text-danger">{error}</div>;
