@@ -18,7 +18,7 @@ import { useState } from "react";
 
 function App() {
   const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGI1YTY3YTE2MjdjNjAwMTVmOGM1NmQiLCJpYXQiOjE3NTY3MzUxMDksImV4cCI6MTc1Nzk0NDcwOX0.gG2pebnNJtBCq0sb9BDZTkubFARrTjYyvZOoaZigMLg";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGI2ZWYyODU2MzA1YzAwMTU1ODgzNTUiLCJpYXQiOjE3NTY4MTkyNDAsImV4cCI6MTc1ODAyODg0MH0.mJDQJKbzQs0cNjxS0dB4A7-DFPVUYsM0hZGX7abJwLY";
   const [selectedProfile, setSelectedProfile] = useState(null);
   // Uso questo stato per memorizzare il profilo scelto
   return (
@@ -40,7 +40,7 @@ function App() {
             <Activity />
           </div>
           <div className="mb-5">
-            <Experience />
+            <Experience profileId={selectedProfile?._id || null} />
           </div>
           <div className="mb-5">
             <Education />
