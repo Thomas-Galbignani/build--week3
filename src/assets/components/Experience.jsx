@@ -3,7 +3,7 @@ import ModalFormExperiences from "./ModalFormExperiences";
 import { useState, useEffect, useMemo } from "react";
 import { ImPencil } from "react-icons/im";
 import { FaTrashCan, FaPlus } from "react-icons/fa6";
-import { Button } from "react-bootstrap";
+
 
 const API_URL = "https://striveschool-api.herokuapp.com/api/profile/";
 const AbbronzatoKey =
