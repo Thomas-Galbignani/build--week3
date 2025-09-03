@@ -1,137 +1,176 @@
-import { useState } from "react";
-import { MdAddToPhotos } from "react-icons/md";
+import { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import GetYourId from "../functions/GetYourId";
 
-function ModalFormExperiences() {
-  const [show, setShow] = useState(false);
+const API_URL = "https://striveschool-api.herokuapp.com/api/profile/";
+const AbbronzatoKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGI2ZWYyODU2MzA1YzAwMTU1ODgzNTUiLCJpYXQiOjE3NTY4MTkyNDAsImV4cCI6MTc1ODAyODg0MH0.mJDQJKbzQs0cNjxS0dB4A7-DFPVUYsM0hZGX7abJwLY";
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+export default function ModalFormExperiences({
+  experience,
+  onClose,
+  onUpdate,
+  userId,
+}) {
+  const [formData, setFormData] = useState({
+    role: "",
+    company: "",
+    area: "",
+    description: "",
+    startDate: "",
+    endDate: null,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (experience) {
+      setFormData({
+        ...experience,
+        startDate: experience.startDate
+          ? experience.startDate.substring(0, 10)
+          : "",
+        endDate: experience.endDate
+          ? experience.endDate.substring(0, 10)
+          : null,
+      });
+    } else {
+      setFormData({
+        role: "",
+        company: "",
+        area: "",
+        description: "",
+        startDate: "",
+        endDate: null,
+      });
+    }
+  }, [experience]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    // 1. Await the result of the async function to get the actual ID
-    const myId = await GetYourId();
-
-    // 2. Correct the URL by removing the extra colon
-    const EndpointExp = `https://striveschool-api.herokuapp.com/api/profile/${myId}/experiences`;
-    const AbbronzatoKey =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGI2ZWYyODU2MzA1YzAwMTU1ODgzNTUiLCJpYXQiOjE3NTY4MTkyNDAsImV4cCI6MTc1ODAyODg0MH0.mJDQJKbzQs0cNjxS0dB4A7-DFPVUYsM0hZGX7abJwLY";
-
-    const Target = e.target;
-
-    const FD = new FormData(Target);
-    const Payload = {
-      role: FD.get("role"),
-      company: FD.get("company"),
-      startDate: FD.get("startDate"),
-      endDate: FD.get("endDate"),
-      description: FD.get("description"),
-      area: FD.get("area"),
-    };
+    const method = experience ? "PUT" : "POST";
+    const url = experience
+      ? `${API_URL}${userId}/experiences/${experience._id}`
+      : `${API_URL}${userId}/experiences`;
 
     try {
-      const Res = await fetch(`${EndpointExp}`, {
-        method: "POST",
+      const response = await fetch(url, {
+        method: method,
         headers: {
-          authorization: `Bearer ${AbbronzatoKey}`,
           "Content-Type": "application/json",
+          Authorization: `Bearer ${AbbronzatoKey}`,
         },
-        body: JSON.stringify(Payload),
+        body: JSON.stringify(formData),
       });
-      console.log(Res);
-      if (!Res.ok) {
-        throw new Error(Res.status);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      Target.reset();
+
+      onUpdate();
     } catch (err) {
-      console.log(err);
+      console.error("Errore durante l'operazione:", err);
+      alert("Si è verificato un errore. Riprova.");
+    } finally {
+      setIsSubmitting(false);
+      onClose();
     }
-    handleClose();
   };
 
   return (
-    <>
-      <Button variant="primary" onClick={handleShow}>
-        <MdAddToPhotos />
-      </Button>
-
-      <Modal show={show} onHide={handleClose} className="ModalExp">
-        <Modal.Header closeButton>
-          <Modal.Title>Aggiungi esperienza lavorativa</Modal.Title>
-        </Modal.Header>
+    <Modal show={true} onHide={onClose} style={{ zIndex: 2000 }}>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          {experience ? "Modifica Esperienza" : "Aggiungi Esperienza"}
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
         <Form onSubmit={handleSubmit}>
-          <Modal.Body>
-            <Form.Group className="mb-3" controlId="formRuolo">
-              <Form.Label>Ruolo</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Es. Sviluppatore Frontend"
-                required
-                name="role"
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formCompagnia">
-              <Form.Label>Compagnia</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Es. OpenAI"
-                required
-                name="company"
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formInizio">
-              <Form.Label>Data di inizio</Form.Label>
-              <Form.Control type="date" required name="startDate" />
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formFine">
-              <Form.Label>Data di fine</Form.Label>
-              <Form.Control type="date" name="endDate" />
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formDescrizione">
-              <Form.Label>Descrizione</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                placeholder="Descrivi la tua esperienza"
-                name="description"
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formLuogo">
-              <Form.Label>Luogo</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Es. Milano, Italia"
-                name="area"
-              />
-            </Form.Group>
-          </Modal.Body>
-
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
+          <Form.Group className="mb-3">
+            <Form.Label>Ruolo</Form.Label>
+            <Form.Control
+              type="text"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Azienda</Form.Label>
+            <Form.Control
+              type="text"
+              name="company"
+              value={formData.company}
+              onChange={handleChange}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Località</Form.Label>
+            <Form.Control
+              type="text"
+              name="area"
+              value={formData.area}
+              onChange={handleChange}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Data di inizio</Form.Label>
+            <Form.Control
+              type="date"
+              name="startDate"
+              value={formData.startDate}
+              onChange={handleChange}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Data di fine (facoltativa)</Form.Label>
+            <Form.Control
+              type="date"
+              name="endDate"
+              value={formData.endDate || ""}
+              onChange={handleChange}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Descrizione</Form.Label>
+            <Form.Control
+              as="textarea"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              rows={3}
+            />
+          </Form.Group>
+          <div className="d-flex justify-content-end">
+            <Button
+              variant="secondary"
+              onClick={onClose}
+              className="me-2"
+            >
               Annulla
             </Button>
-            <Button variant="primary" type="submit">
-              Salva
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Salvataggio..." : "Salva"}
             </Button>
-          </Modal.Footer>
+          </div>
         </Form>
-        <style>{`
-        .ModalExp {
-          z-index: 1200; 
-          
-        }
-          `}</style>
-      </Modal>
-    </>
+      </Modal.Body>
+    </Modal>
   );
 }
-
-export default ModalFormExperiences;
