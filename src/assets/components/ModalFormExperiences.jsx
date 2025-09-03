@@ -1,28 +1,26 @@
-import { useState } from "react";
-import { MdAddToPhotos } from "react-icons/md";
-import { Modal, Button, Form } from "react-bootstrap";
-import GetYourId from "../functions/GetYourId";
+import { useState } from "react"
+import { MdAddToPhotos } from "react-icons/md"
+import { Modal, Button, Form } from "react-bootstrap"
+import GetYourId from "../functions/GetYourId"
 
 function ModalFormExperiences() {
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(false)
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleClose = () => setShow(false)
+  const handleShow = () => setShow(true)
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    // 1. Await the result of the async function to get the actual ID
-    const myId = await GetYourId();
+    const myId = await GetYourId()
 
-    // 2. Correct the URL by removing the extra colon
-    const EndpointExp = `https://striveschool-api.herokuapp.com/api/profile/${myId}/experiences`;
+    const EndpointExp = `https://striveschool-api.herokuapp.com/api/profile/${myId}/experiences`
     const AbbronzatoKey =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGI2ZWYyODU2MzA1YzAwMTU1ODgzNTUiLCJpYXQiOjE3NTY4MTkyNDAsImV4cCI6MTc1ODAyODg0MH0.mJDQJKbzQs0cNjxS0dB4A7-DFPVUYsM0hZGX7abJwLY";
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGI2ZWYyODU2MzA1YzAwMTU1ODgzNTUiLCJpYXQiOjE3NTY4MTkyNDAsImV4cCI6MTc1ODAyODg0MH0.mJDQJKbzQs0cNjxS0dB4A7-DFPVUYsM0hZGX7abJwLY"
 
-    const Target = e.target;
+    const Target = e.target
 
-    const FD = new FormData(Target);
+    const FD = new FormData(Target)
     const Payload = {
       role: FD.get("role"),
       company: FD.get("company"),
@@ -30,7 +28,7 @@ function ModalFormExperiences() {
       endDate: FD.get("endDate"),
       description: FD.get("description"),
       area: FD.get("area"),
-    };
+    }
 
     try {
       const Res = await fetch(`${EndpointExp}`, {
@@ -40,17 +38,17 @@ function ModalFormExperiences() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(Payload),
-      });
-      console.log(Res);
+      })
+      console.log(Res)
       if (!Res.ok) {
-        throw new Error(Res.status);
+        throw new Error(Res.status)
       }
-      Target.reset();
+      Target.reset()
     } catch (err) {
-      console.log(err);
+      console.log(err)
     }
-    handleClose();
-  };
+    handleClose()
+  }
 
   return (
     <>
@@ -131,7 +129,7 @@ function ModalFormExperiences() {
           `}</style>
       </Modal>
     </>
-  );
+  )
 }
 
-export default ModalFormExperiences;
+export default ModalFormExperiences

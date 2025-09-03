@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import { Navbar, Nav, Container, Dropdown, Image } from "react-bootstrap";
+import { useEffect, useRef, useState } from "react"
+import { Navbar, Nav, Container, Dropdown, Image } from "react-bootstrap"
+import { Link, useLocation } from "react-router-dom"
 import {
   BsLinkedin,
   BsHouseDoorFill,
@@ -9,7 +10,7 @@ import {
   BsBellFill,
   BsGrid3X3GapFill,
   BsSearch,
-} from "react-icons/bs";
+} from "react-icons/bs"
 
 /* Search base */
 const SearchBox = ({
@@ -33,7 +34,7 @@ const SearchBox = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") onSubmit();
+          if (e.key === "Enter") onSubmit()
         }}
       />
       {loading && <small className="text-muted ms-2 me-1">cerca…</small>}
@@ -92,98 +93,127 @@ const SearchBox = ({
       .suggestion-item:hover { background: #f6f6f6; }
     `}</style>
   </div>
-);
+)
 
 const LinkedInNavbar = ({ token, onSelectProfile }) => {
-  const [active, setActive] = useState("home");
-  const [q, setQ] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const abortRef = useRef(null);
+  const location = useLocation()
+  const active =
+    location.pathname === "/"
+      ? "home"
+      : location.pathname.startsWith("/profile")
+      ? "profile"
+      : ""
+  const [q, setQ] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [suggestions, setSuggestions] = useState([])
+  const abortRef = useRef(null)
+  const [meImage, setMeImage] = useState("")
 
   const normalized = (s) =>
     (s || "")
       .normalize("NFD")
       .replace(/\p{Diacritic}/gu, "")
-      .toLowerCase();
+      .toLowerCase()
 
   const fetchAllProfiles = async () => {
-    if (!token) throw new Error("Token mancante");
-    const url = "https://striveschool-api.herokuapp.com/api/profile/";
+    if (!token) throw new Error("Token mancante")
+    const url = "https://striveschool-api.herokuapp.com/api/profile/"
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
       signal: abortRef.current?.signal,
-    });
+    })
     if (!res.ok) {
-      const t = await res.text();
-      throw new Error(`Errore API (${res.status}): ${t}`);
+      const t = await res.text()
+      throw new Error(`Errore API (${res.status}): ${t}`)
     }
-    const arr = await res.json();
-    return Array.isArray(arr) ? arr : [];
-  };
+    const arr = await res.json()
+    return Array.isArray(arr) ? arr : []
+  }
 
   const runSearch = async () => {
     try {
-      setLoading(true);
-      setError("");
-      if (abortRef.current) abortRef.current.abort();
-      abortRef.current = new AbortController();
+      setLoading(true)
+      setError("")
+      if (abortRef.current) abortRef.current.abort()
+      abortRef.current = new AbortController()
 
-      const all = await fetchAllProfiles();
-      const nq = normalized(q);
+      const all = await fetchAllProfiles()
+      const nq = normalized(q)
       const filtered = all.filter((p) => {
-        const full = normalized(`${p.name} ${p.surname}`);
-        const uname = normalized(p.username);
-        const title = normalized(p.title);
-        const area = normalized(p.area);
+        const full = normalized(`${p.name} ${p.surname}`)
+        const uname = normalized(p.username)
+        const title = normalized(p.title)
+        const area = normalized(p.area)
         return (
           full.includes(nq) ||
           (uname && uname.includes(nq)) ||
           (title && title.includes(nq)) ||
           (area && area.includes(nq))
-        );
-      });
+        )
+      })
 
-      setSuggestions(filtered);
+      setSuggestions(filtered)
       if (filtered.length === 1) {
-        onSelectProfile?.(filtered[0]);
+        onSelectProfile?.(filtered[0])
       } else if (filtered.length === 0) {
-        setError("Nessun profilo trovato.");
+        setError("Nessun profilo trovato.")
       }
     } catch (e) {
-      if (e.name !== "AbortError") setError(e.message || "Errore di ricerca");
+      if (e.name !== "AbortError") setError(e.message || "Errore di ricerca")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // debounce suggerimenti mentre si digita
   useEffect(() => {
     if (!q.trim()) {
-      setSuggestions([]);
-      setError("");
-      return;
+      setSuggestions([])
+      setError("")
+      return
     }
     const id = setTimeout(() => {
-      runSearch();
-    }, 300);
-    return () => clearTimeout(id);
+      runSearch()
+    }, 300)
+    return () => clearTimeout(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q]);
+  }, [q])
 
-  const IconItem = ({ icon, label, eventKey }) => (
+  // immagine utente per avatar "Tu"
+  useEffect(() => {
+    const fetchMe = async () => {
+      try {
+        if (!token) return
+        const res = await fetch(
+          "https://striveschool-api.herokuapp.com/api/profile/me",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        if (!res.ok) return
+        const data = await res.json()
+        if (data?.image) setMeImage(data.image)
+      } catch {
+        /* ignore */
+      }
+    }
+    fetchMe()
+  }, [token])
+
+  const IconItem = ({ icon, label, eventKey, to }) => (
     <Nav.Link
+      as={to ? Link : undefined}
+      to={to}
       eventKey={eventKey}
       className={`lkd-item px-3 ${active === eventKey ? "active" : ""}`}
-      onClick={() => setActive(eventKey)}
     >
       <div className="d-flex flex-column align-items-center gap-1">
         <span className="lkd-icon fs-5">{icon}</span>
         <small className="nav-label">{label}</small>
       </div>
     </Nav.Link>
-  );
+  )
 
   return (
     <Navbar
@@ -208,8 +238,8 @@ const LinkedInNavbar = ({ token, onSelectProfile }) => {
               error={error}
               suggestions={suggestions}
               onPickSuggestion={(p) => {
-                onSelectProfile?.(p);
-                setSuggestions([]);
+                onSelectProfile?.(p)
+                setSuggestions([])
               }}
             />
           </div>
@@ -219,12 +249,13 @@ const LinkedInNavbar = ({ token, onSelectProfile }) => {
 
         {/* Destra */}
         <Navbar.Collapse id="lkd-nav">
-          <Nav
-            className="ms-auto align-items-center"
-            activeKey={active}
-            onSelect={(k) => setActive(k)}
-          >
-            <IconItem icon={<BsHouseDoorFill />} label="Home" eventKey="home" />
+          <Nav className="ms-auto align-items-center" activeKey={active}>
+            <IconItem
+              icon={<BsHouseDoorFill />}
+              label="Home"
+              eventKey="home"
+              to="/"
+            />
             <IconItem icon={<BsPeopleFill />} label="Rete" eventKey="rete" />
             <IconItem
               icon={<BsBriefcaseFill />}
@@ -255,13 +286,18 @@ const LinkedInNavbar = ({ token, onSelectProfile }) => {
                       width={24}
                       height={24}
                       alt="Tu"
-                      src="https://i.pravatar.cc/48"
+                      src={
+                        meImage ||
+                        "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
+                      }
                     />
                     <small className="nav-label">Tu</small>
                   </div>
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="shadow dropdown-menu-touch">
-                  <Dropdown.Item href="#">Profilo</Dropdown.Item>
+                  <Dropdown.Item as={Link} to="/profile">
+                    Profilo
+                  </Dropdown.Item>
                   <Dropdown.Item href="#">Impostazioni</Dropdown.Item>
                   <Dropdown.Divider />
                   <Dropdown.Item href="#">Esci</Dropdown.Item>
@@ -349,7 +385,7 @@ const LinkedInNavbar = ({ token, onSelectProfile }) => {
         }
       `}</style>
     </Navbar>
-  );
-};
+  )
+}
 
-export default LinkedInNavbar;
+export default LinkedInNavbar

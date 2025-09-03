@@ -1,70 +1,40 @@
-import "bootstrap/dist/css/bootstrap.min.css";
-import { Container, Row, Col } from "react-bootstrap";
-import Sidebar from "./components/Sidebar";
-import Hero from "./assets/components/hero";
-import "./App.css";
-import LinkedInNavbar from "./assets/components/LinkedInNavbar";
-import LinkedInFooter from "./assets/components/LinkedInFooter";
-import Activity from "./assets/components/Activity.jsx";
-import Experience from "./assets/components/Experience.jsx";
-import Education from "./assets/components/Education.jsx";
-import Certifications from "./assets/components/Certifications.jsx";
-import Skills from "./assets/components/Skills.jsx";
-import Languages from "./assets/components/Languages.jsx";
-import Interests from "./assets/components/Interests.jsx";
-import AnalisiSection from "./assets/components/AnalisiSection.jsx";
-import InformazioniSection from "./assets/components/InformazioniSection.jsx";
-import { useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css"
+import "./App.css"
+import { useState } from "react"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import Layout from "./Layout.jsx"
+import Home from "./pages/Home.jsx"
+import Profile from "./pages/Profile.jsx"
 
 function App() {
   const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGI2ZWYyODU2MzA1YzAwMTU1ODgzNTUiLCJpYXQiOjE3NTY4MTkyNDAsImV4cCI6MTc1ODAyODg0MH0.mJDQJKbzQs0cNjxS0dB4A7-DFPVUYsM0hZGX7abJwLY";
-  const [selectedProfile, setSelectedProfile] = useState(null);
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGI2ZWYyODU2MzA1YzAwMTU1ODgzNTUiLCJpYXQiOjE3NTY4MTkyNDAsImV4cCI6MTc1ODAyODg0MH0.mJDQJKbzQs0cNjxS0dB4A7-DFPVUYsM0hZGX7abJwLY"
+  const [selectedProfile, setSelectedProfile] = useState(null)
   // Uso questo stato per memorizzare il profilo scelto
   return (
-    <Container>
-      <LinkedInNavbar
-        token={token}
-        onSelectProfile={(p) => setSelectedProfile(p)}
-      />
-      <Row>
-        <Col sm={12} md={8}>
-          <Hero token={token} profile={selectedProfile} />
-          <div>
-            <AnalisiSection />
-          </div>
-          <div>
-            <InformazioniSection token={token} profile={selectedProfile} />
-          </div>
-          <div className="mb-5">
-            <Activity />
-          </div>
-          <div className="mb-5">
-            <Experience profileId={selectedProfile?._id || null} />
-          </div>
-          <div className="mb-5">
-            <Education />
-          </div>
-          <div className="mb-5">
-            <Certifications />
-          </div>
-          <div className="mb-5">
-            <Skills />
-          </div>
-          <div className="mb-5">
-            <Languages />
-          </div>
-          <div className="mb-5">
-            <Interests />
-          </div>
-        </Col>
-        <Col sm={{ ClassName: "d-none" }} md={4}>
-          <Sidebar />
-        </Col>
-      </Row>
-      <LinkedInFooter />
-    </Container>
-  );
+    <BrowserRouter>
+      <Routes>
+        <Route
+          element={
+            <Layout
+              token={token}
+              onSelectProfile={(p) => setSelectedProfile(p)}
+            />
+          }
+        >
+          <Route index element={<Home token={token} />} />
+          <Route
+            path="profile"
+            element={
+              <Profile token={token} selectedProfile={selectedProfile} />
+            }
+          />
+          <Route path="home" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  )
 }
 
-export default App;
+export default App
