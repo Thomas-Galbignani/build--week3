@@ -295,7 +295,11 @@ const LinkedInNavbar = ({ token, onSelectProfile }) => {
                   </div>
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="shadow dropdown-menu-touch">
-                  <Dropdown.Item as={Link} to="/profile">
+                  <Dropdown.Item
+                    as={Link}
+                    to="/profile"
+                    onClick={() => onSelectProfile?.(null)}
+                  >
                     Profilo
                   </Dropdown.Item>
                   <Dropdown.Item href="#">Impostazioni</Dropdown.Item>
