@@ -9,7 +9,7 @@ export default function LinkedInFooter() {
   return (
     <footer className="linkedin-footer py-4 mt-5 border-top">
       <Container>
-        <Row className="gy-4">
+        <Row className="gy-4 justify-content-center justify-content-lg-start">
           {/* Colonna sinistra */}
           <Col xs={12} lg={8}>
             <Row>
@@ -68,7 +68,7 @@ export default function LinkedInFooter() {
           </Col>
 
           {/* Colonna destra */}
-          <Col xs={12} lg={4} className="small">
+          <Col xs="auto" lg={4} className="small">
             <div className="d-flex align-items-start gap-2 mb-3">
               <BsQuestionCircleFill className="text-secondary fs-5" />
               <div>
